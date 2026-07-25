@@ -167,21 +167,38 @@
             <small class="form-hint">Discord → Kanal-Einstellungen → Integrationen → Webhooks</small>
           </div>
           <div class="form-group">
-            <label>Twitch Client-ID</label>
-            <input type="text" id="setClientId" placeholder="Für Live-Erkennung (optional)">
-            <small class="form-hint">Von <a href="https://dev.twitch.tv/console" target="_blank" rel="noopener">dev.twitch.tv/console</a> – für automatische Live-Benachrichtigungen</small>
-          </div>
-          <div class="form-group">
-            <label>Twitch Client Secret</label>
-            <div class="input-with-btn">
-              <input type="password" id="setClientSecret" placeholder="Für Live-Erkennung (optional)">
-              <button class="btn-toggle-pw" onclick="togglePassword('setClientSecret', this)">👁️</button>
-            </div>
-          </div>
-          <div class="form-group">
             <label>Prüf-Intervall (Sekunden)</label>
             <input type="number" id="setPollInterval" value="60" min="30" max="300" style="width: 100px;">
             <small class="form-hint">Wie oft der Live-Status geprüft wird (Standard: 60s)</small>
+          </div>
+        </div>
+
+        <!-- Twitch API -->
+        <div class="settings-section">
+          <h3>🔑 Twitch API</h3>
+          <p class="section-desc">Für Follow-Events & automatische Live-Erkennung. Erstelle eine App auf <a href="https://dev.twitch.tv/console" target="_blank" rel="noopener">dev.twitch.tv/console</a> (eingeloggt als dein <strong>Bot-Account</strong>)</p>
+          <div class="form-group">
+            <label>Client-ID (vom Bot-Account)</label>
+            <input type="text" id="setClientId" placeholder="z.B. abc123def456...">
+            <small class="form-hint">Die Client-ID der Twitch-App deines <strong>Bot-Accounts</strong> (nicht dein Streamer-Account!)</small>
+          </div>
+          <div class="form-group">
+            <label>Client Secret (vom Bot-Account)</label>
+            <div class="input-with-btn">
+              <input type="password" id="setClientSecret" placeholder="Für Live-Erkennung an Discord">
+              <button class="btn-toggle-pw" onclick="togglePassword('setClientSecret', this)">👁️</button>
+            </div>
+            <small class="form-hint">Nur nötig für automatische Live-Benachrichtigungen an Discord</small>
+          </div>
+          <div class="form-group info-box">
+            <p>ℹ️ <strong>So richtest du es ein:</strong></p>
+            <ol>
+              <li>Logge dich auf <a href="https://dev.twitch.tv/console" target="_blank" rel="noopener">dev.twitch.tv</a> mit deinem <strong>Bot-Account</strong> ein</li>
+              <li>Erstelle eine Anwendung (Redirect URL: <code>http://localhost</code>, Kategorie: Chat Bot)</li>
+              <li>Kopiere die <strong>Client-ID</strong> und optional das <strong>Client Secret</strong></li>
+              <li>Mache deinen Bot zum <strong>Moderator</strong> in deinem Kanal: <code>/mod BotName</code></li>
+              <li>Generiere ein neues OAuth-Token mit dem Scope <code>moderator:read:followers</code></li>
+            </ol>
           </div>
         </div>
 
