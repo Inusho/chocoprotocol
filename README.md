@@ -244,6 +244,14 @@ Danach werden alle Änderungen über das Dashboard gemacht.
 
 ---
 
+## Support
+
+If you find this project useful, you can buy me a coffee!
+
+[!["Buy Me A Coffee"](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nanaki13)
+
+---
+
 ## Lizenz
 
 MIT
