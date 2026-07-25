@@ -235,6 +235,7 @@ function logMessage(tags, message, isBot = false) {
     color: tags.color || '#9147ff',
     badges: tags.badges || {},
     isBot,
+    sourceChannel: tags['source-room-login'] || null,
   };
 
   state.chatLog.push(entry);

@@ -96,12 +96,18 @@ function addChatMessage(msg) {
   else if (msg.badges.vip) badges += '<span class="badge">💎</span>';
   else if (msg.badges.subscriber) badges += '<span class="badge">⭐</span>';
 
+  // Stream Together: Quell-Kanal anzeigen
+  let sourceTag = '';
+  if (msg.sourceChannel && msg.sourceChannel !== channelName.textContent.replace('#', '').toLowerCase()) {
+    sourceTag = `<span class="source-channel">[${escapeHtml(msg.sourceChannel)}]</span> `;
+  }
+
   const safeMessage = escapeHtml(msg.message);
   const safeUsername = escapeHtml(msg.username);
 
   div.innerHTML = `
     <span class="time">${msg.time}</span>
-    ${badges}
+    ${sourceTag}${badges}
     <span class="username" style="color: ${msg.color}">${safeUsername}:</span>
     <span class="text">${safeMessage}</span>
   `;
