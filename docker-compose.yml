@@ -1,0 +1,12 @@
+services:
+  twitch-bot:
+    build: .
+    container_name: twitch-bot
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./sounds:/app/sounds
+    env_file:
+      - .env

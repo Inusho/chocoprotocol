@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Persönliche Konfiguration (NIEMALS einchecken!)
+.env
+data/settings.json
+
+# User-Daten
+data/custom-commands.json
+data/disabled-commands.json
+data/notifications.json
+data/discord.json
+
+# Sound-Dateien
+sounds/*.mp3
+sounds/*.wav
+sounds/*.ogg
+
+# System
+.DS_Store
+Thumbs.db
+*.log
+
+# Lokale Projekt-Notizen
+PROJEKT.md

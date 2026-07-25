@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twitch Bot Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Header -->
+    <header class="header">
+      <h1>🤖 Twitch Bot</h1>
+      <div class="status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Verbinde...</span>
+        <span class="channel" id="channelName"></span>
+        <button class="header-btn" id="btnSettings" title="Einstellungen">⚙️</button>
+      </div>
+    </header>
+
+    <!-- Setup Banner (shown when not configured) -->
+    <div class="setup-banner hidden" id="setupBanner">
+      <span>⚠️ Bot ist noch nicht konfiguriert! Trage deine Twitch-Daten in den Einstellungen ein.</span>
+      <button class="btn-setup" id="btnSetup">Jetzt einrichten →</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat">
+        <span class="stat-value" id="statMessages">0</span>
+        <span class="stat-label">Nachrichten</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="statCommands">0</span>
+        <span class="stat-label">Commands</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="statTimeouts">0</span>
+        <span class="stat-label">Timeouts</span>
+      </div>
+    </div>
+
+    <!-- ==================== DASHBOARD VIEW ==================== -->
+    <div class="main" id="dashboardView">
+      <!-- Chat -->
+      <div class="panel chat-panel">
+        <h2>💬 Chat</h2>
+        <div class="chat-log" id="chatLog"></div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Nachricht senden..." autocomplete="off">
+          <button id="chatSend">Senden</button>
+        </div>
+      </div>
+
+      <!-- Sidebar: Events + Commands -->
+      <div class="sidebar">
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+          <button class="tab-btn active" data-tab="events">🔔 Events</button>
+          <button class="tab-btn" data-tab="commands">⚡ Commands</button>
+          <button class="tab-btn" data-tab="notifications">📢 Alerts</button>
+        </div>
+
+        <!-- Events Tab -->
+        <div class="tab-content active" id="tab-events">
+          <div class="events-log" id="eventsLog">
+            <p class="empty-state">Noch keine Events...</p>
+          </div>
+        </div>
+
+        <!-- Commands Tab -->
+        <div class="tab-content" id="tab-commands">
+          <div class="commands-section">
+            <button class="btn-add-command" id="btnAddCommand">+ Neuer Command</button>
+
+            <!-- Command erstellen/bearbeiten -->
+            <div class="command-form hidden" id="commandForm">
+              <h3 id="formTitle">Neuer Command</h3>
+              <div class="form-group">
+                <label>Name (ohne !)</label>
+                <input type="text" id="cmdName" placeholder="z.B. lurk">
+              </div>
+              <div class="form-group">
+                <label>Antwort</label>
+                <textarea id="cmdResponse" placeholder="z.B. {user} lurkt jetzt! 👀" rows="3"></textarea>
+                <small class="form-hint">Variablen: {user} {channel} {args} {count} {random 1-100}</small>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Cooldown (Sek.)</label>
+                  <input type="number" id="cmdCooldown" value="5" min="0">
+                </div>
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="cmdModOnly">
+                    Nur Mods
+                  </label>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn-save" id="btnSaveCmd">Speichern</button>
+                <button class="btn-cancel" id="btnCancelCmd">Abbrechen</button>
+              </div>
+            </div>
+
+            <!-- Command-Listen -->
+            <div class="command-list" id="commandList"></div>
+          </div>
+        </div>
+
+        <!-- Notifications Tab -->
+        <div class="tab-content" id="tab-notifications">
+          <div class="notifications-section" id="notificationsSection">
+            <p class="empty-state">Lädt...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SETTINGS VIEW ==================== -->
+    <div class="settings-view hidden" id="settingsView">
+      <div class="settings-header">
+        <h2>⚙️ Einstellungen</h2>
+        <div class="settings-header-actions">
+          <button class="btn-back" id="btnBackToDashboard">← Zurück</button>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <!-- Twitch Verbindung -->
+        <div class="settings-section">
+          <h3>🎮 Twitch-Verbindung</h3>
+          <p class="section-desc">Verbindungsdaten für deinen Twitch Bot</p>
+          <div class="form-group">
+            <label>Bot-Benutzername</label>
+            <input type="text" id="setBotUsername" placeholder="z.B. MeinCoolerBot">
+            <small class="form-hint">Der Twitch-Account Name deines Bots</small>
+          </div>
+          <div class="form-group">
+            <label>OAuth Token</label>
+            <div class="input-with-btn">
+              <input type="password" id="setOauthToken" placeholder="oauth:...">
+              <button class="btn-toggle-pw" onclick="togglePassword('setOauthToken', this)">👁️</button>
+            </div>
+            <small class="form-hint">Hole dir eins auf <a href="https://twitchapps.com/tmi/" target="_blank" rel="noopener">twitchapps.com/tmi</a></small>
+          </div>
+          <div class="form-group">
+            <label>Kanal-Name</label>
+            <input type="text" id="setChannel" placeholder="z.B. DeinKanalName">
+            <small class="form-hint">Der Twitch-Kanal in dem der Bot aktiv sein soll (ohne #)</small>
+          </div>
+          <div class="form-group">
+            <label>Command Prefix</label>
+            <input type="text" id="setPrefix" placeholder="!" maxlength="3" style="width: 80px;">
+            <small class="form-hint">Zeichen vor Commands (Standard: !)</small>
+          </div>
+        </div>
+
+        <!-- Discord -->
+        <div class="settings-section">
+          <h3>💬 Discord-Integration</h3>
+          <p class="section-desc">Sende Benachrichtigungen an einen Discord-Kanal</p>
+          <div class="form-group">
+            <label>Webhook URL</label>
+            <input type="text" id="setWebhookUrl" placeholder="https://discord.com/api/webhooks/...">
+            <small class="form-hint">Discord → Kanal-Einstellungen → Integrationen → Webhooks</small>
+          </div>
+          <div class="form-group">
+            <label>Twitch Client-ID</label>
+            <input type="text" id="setClientId" placeholder="Für Live-Erkennung (optional)">
+            <small class="form-hint">Von <a href="https://dev.twitch.tv/console" target="_blank" rel="noopener">dev.twitch.tv/console</a> – für automatische Live-Benachrichtigungen</small>
+          </div>
+          <div class="form-group">
+            <label>Twitch Client Secret</label>
+            <div class="input-with-btn">
+              <input type="password" id="setClientSecret" placeholder="Für Live-Erkennung (optional)">
+              <button class="btn-toggle-pw" onclick="togglePassword('setClientSecret', this)">👁️</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Prüf-Intervall (Sekunden)</label>
+            <input type="number" id="setPollInterval" value="60" min="30" max="300" style="width: 100px;">
+            <small class="form-hint">Wie oft der Live-Status geprüft wird (Standard: 60s)</small>
+          </div>
+        </div>
+
+        <!-- Moderation -->
+        <div class="settings-section">
+          <h3>🛡️ Moderation</h3>
+          <p class="section-desc">Auto-Mod Regeln für den Chat</p>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="setBlockLinks">
+              Links blockieren
+            </label>
+            <small class="form-hint">Nicht-Mods/VIPs dürfen keine Links posten</small>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Max. Caps (%)</label>
+              <input type="number" id="setMaxCaps" value="70" min="0" max="100">
+            </div>
+            <div class="form-group">
+              <label>Min. Caps-Länge</label>
+              <input type="number" id="setMinCapsLen" value="10" min="1">
+            </div>
+            <div class="form-group">
+              <label>Timeout (Sek.)</label>
+              <input type="number" id="setTimeout" value="10" min="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Gesperrte Wörter</label>
+            <textarea id="setBannedWords" rows="2" placeholder="wort1, wort2, wort3"></textarea>
+            <small class="form-hint">Komma-getrennt – Nachrichten mit diesen Wörtern werden gelöscht</small>
+          </div>
+        </div>
+
+        <!-- Soundboard -->
+        <div class="settings-section">
+          <h3>🔊 Soundboard</h3>
+          <p class="section-desc">Sound-Effekte im Stream abspielen</p>
+          <div class="form-group">
+            <label>Cooldown (Sekunden)</label>
+            <input type="number" id="setSoundCooldown" value="10" min="0" style="width: 100px;">
+            <small class="form-hint">Wartezeit zwischen Sounds pro User</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save & Restart -->
+      <div class="settings-footer">
+        <button class="btn-save-settings" id="btnSaveSettings">💾 Einstellungen speichern</button>
+        <div class="restart-info hidden" id="restartInfo">
+          <span>🔄 Änderungen erfordern einen Neustart</span>
+          <button class="btn-restart" id="btnRestart">Jetzt neustarten</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
