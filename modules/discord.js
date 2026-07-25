@@ -34,6 +34,7 @@ function getDefaults() {
       resub: { enabled: true, message: '💜 **{user}** ist seit **{months} Monaten** dabei! ({tier})' },
       raid: { enabled: true, message: '🚨 **{user}** raidet mit **{viewers}** Zuschauern!' },
       giftsub: { enabled: true, message: '🎁 **{user}** hat **{recipient}** ein Sub geschenkt!' },
+      follow: { enabled: true, message: '💜 **{user}** folgt jetzt dem Kanal!' },
     },
   };
 }

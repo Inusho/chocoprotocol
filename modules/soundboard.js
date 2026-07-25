@@ -1,6 +1,8 @@
 // ============================================
-// SOUNDBOARD - Sounds im Stream abspielen
+// SOUNDBOARD - Sounds über Browser/OBS abspielen
 // ============================================
+// Sounds werden per Socket.IO an verbundene Clients
+// (Dashboard, OBS Browser-Source) gesendet.
 
 const fs = require('fs');
 const path = require('path');
@@ -8,6 +10,13 @@ const config = require('../config');
 
 // Cooldown-Tracking
 const lastPlayed = new Map();
+
+// Socket.IO Referenz (wird von dashboard/server.js gesetzt)
+let io = null;
+
+function setIO(socketIO) {
+  io = socketIO;
+}
 
 /**
  * Gibt eine Liste aller verfügbaren Sounds zurück
@@ -22,15 +31,30 @@ function getSoundList() {
 
   return fs
     .readdirSync(soundsDir)
-    .filter((file) => file.endsWith('.mp3') || file.endsWith('.wav'))
+    .filter((file) => /\.(mp3|wav|ogg)$/i.test(file))
     .map((file) => path.basename(file, path.extname(file)));
 }
 
 /**
- * Spielt einen Sound ab
+ * Findet die Datei eines Sounds (mit Erweiterung)
+ */
+function getSoundFile(soundName) {
+  const soundsDir = config.soundboard.soundsFolder;
+  const extensions = ['.mp3', '.wav', '.ogg'];
+
+  for (const ext of extensions) {
+    const filePath = path.join(soundsDir, soundName + ext);
+    if (fs.existsSync(filePath)) {
+      return soundName + ext;
+    }
+  }
+  return null;
+}
+
+/**
+ * Spielt einen Sound ab (sendet an alle verbundenen Browser-Clients)
  */
 function play(soundName, userId) {
-  const soundsDir = config.soundboard.soundsFolder;
   const cooldown = config.soundboard.cooldown * 1000;
 
   // Cooldown prüfen
@@ -44,33 +68,18 @@ function play(soundName, userId) {
   }
 
   // Sound-Datei suchen
-  const extensions = ['.mp3', '.wav'];
-  let soundFile = null;
-
-  for (const ext of extensions) {
-    const filePath = path.join(soundsDir, soundName + ext);
-    if (fs.existsSync(filePath)) {
-      soundFile = filePath;
-      break;
-    }
-  }
-
-  if (!soundFile) {
+  const fileName = getSoundFile(soundName);
+  if (!fileName) {
     return { success: false, message: `❌ Sound "${soundName}" nicht gefunden!` };
   }
 
-  // Sound abspielen
-  try {
-    const playSound = require('play-sound')();
-    playSound.play(soundFile, (err) => {
-      if (err) console.error('Sound-Fehler:', err);
-    });
-    lastPlayed.set(userId, now);
-    return { success: true };
-  } catch (error) {
-    console.error('Soundboard Fehler:', error);
-    return { success: false, message: '❌ Sound konnte nicht abgespielt werden.' };
+  // Sound per Socket.IO an alle Clients senden
+  if (io) {
+    io.emit('playSound', { file: `/sounds/${fileName}`, name: soundName });
   }
+
+  lastPlayed.set(userId, now);
+  return { success: true };
 }
 
-module.exports = { getSoundList, play };
+module.exports = { getSoundList, getSoundFile, play, setIO };

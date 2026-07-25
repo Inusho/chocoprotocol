@@ -65,6 +65,13 @@ socket.on('chat', (msg) => addChatMessage(msg));
 socket.on('stats', (stats) => updateStats(stats));
 socket.on('event', (event) => addEvent(event));
 
+// Sounds im Dashboard abspielen
+socket.on('playSound', (data) => {
+  const audio = new Audio(data.file);
+  audio.volume = 0.5;
+  audio.play().catch(() => {});
+});
+
 // Status aktualisieren
 function updateStatus(connected) {
   statusDot.className = `status-dot ${connected ? 'connected' : ''}`;

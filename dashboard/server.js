@@ -8,6 +8,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 const customCommands = require('../modules/custom-commands');
 const settings = require('../modules/settings');
+const soundboard = require('../modules/soundboard');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,8 +16,13 @@ const io = new Server(server);
 
 let currentClient = null;
 
+// Socket.IO an Soundboard übergeben
+soundboard.setIO(io);
+
 // Statische Dateien (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'public')));
+// Sound-Dateien als /sounds/ URL bereitstellen
+app.use('/sounds', express.static(path.join(__dirname, '..', 'sounds')));
 app.use(express.json());
 
 // === API Routen für Command-Verwaltung ===

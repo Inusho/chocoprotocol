@@ -13,6 +13,7 @@ const customCommands = require('./modules/custom-commands');
 const dashboard = require('./dashboard/server');
 const discord = require('./modules/discord');
 const twitchApi = require('./modules/twitch-api');
+const eventsub = require('./modules/eventsub');
 
 // Commands laden
 loadCommands();
@@ -136,5 +137,19 @@ if (!settings.isConfigured()) {
     });
   } else {
     console.log('⚠️  Discord: Kein Webhook konfiguriert – Discord-Benachrichtigungen deaktiviert');
+  }
+
+  // EventSub für Follow-Events starten
+  if (config.twitch.clientId) {
+    eventsub.connect({
+      clientId: config.twitch.clientId,
+      accessToken: config.bot.oauthToken,
+      channel: config.bot.channel,
+      onFollow: (username) => {
+        notifications.onFollow(client, `#${config.bot.channel}`, username);
+        dashboard.logEvent('follow', { username });
+        discord.notify(config.discord.webhookUrl, 'follow', { user: username });
+      },
+    });
   }
 }

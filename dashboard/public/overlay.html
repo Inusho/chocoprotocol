@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Soundboard Overlay</title>
+  <style>
+    /* Transparenter Hintergrund für OBS */
+    body {
+      margin: 0;
+      background: transparent;
+      overflow: hidden;
+    }
+    .sound-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(145, 71, 255, 0.9);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+    }
+    .sound-indicator.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="sound-indicator" id="indicator"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const indicator = document.getElementById('indicator');
+    let hideTimer;
+
+    socket.on('playSound', (data) => {
+      // Sound abspielen
+      const audio = new Audio(data.file);
+      audio.volume = 1.0;
+      audio.play().catch(err => console.error('Audio-Fehler:', err));
+
+      // Kurze Anzeige welcher Sound gespielt wird
+      indicator.textContent = `🔊 ${data.name}`;
+      indicator.classList.add('show');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => indicator.classList.remove('show'), 3000);
+    });
+  </script>
+</body>
+</html>
