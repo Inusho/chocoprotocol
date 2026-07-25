@@ -23,12 +23,18 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .dashboard {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Header */
@@ -105,8 +111,11 @@ body {
 .main {
   display: grid;
   grid-template-columns: 1fr 400px;
+  grid-template-rows: 1fr;
   gap: 16px;
-  height: calc(100vh - 220px);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .panel {
@@ -179,10 +188,15 @@ body {
 }
 
 /* Chat */
+.chat-panel {
+  height: 100%;
+}
+
 .chat-log {
-  flex: 1;
   overflow-y: auto;
   min-height: 0;
+  height: calc(100vh - 320px);
+  max-height: calc(100vh - 320px);
   padding-right: 8px;
 }
 
@@ -666,6 +680,9 @@ body {
 /* Settings View */
 .settings-view {
   animation: fadeIn 0.3s ease;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 @keyframes fadeIn {
