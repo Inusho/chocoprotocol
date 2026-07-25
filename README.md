@@ -67,7 +67,7 @@ Klicke auf **⚙️** oben rechts im Dashboard:
 | Einstellung | Beschreibung |
 |---|---|
 | **Bot-Benutzername** | Der Twitch-Account, unter dem der Bot schreibt |
-| **OAuth Token** | Token von [twitchapps.com/tmi](https://twitchapps.com/tmi/) |
+| **OAuth Token** | Token über [dev.twitch.tv](https://dev.twitch.tv/console) (siehe unten) |
 | **Kanal-Name** | Dein Twitch-Kanal (ohne `#`) |
 
 ### 4. Speichern & Neustarten
@@ -232,6 +232,15 @@ Danach werden alle Änderungen über das Dashboard gemacht.
 
 **Der Bot verbindet sich nicht mit Twitch**
 > Prüfe im Dashboard unter ⚙️ ob Username, OAuth Token und Kanal korrekt sind. Das Token muss mit `oauth:` beginnen.
+
+**Wie bekomme ich ein OAuth Token?**
+> 1. Gehe zu [dev.twitch.tv/console](https://dev.twitch.tv/console) und erstelle eine Anwendung (Redirect URL: `http://localhost`, Kategorie: Chat Bot)
+> 2. Kopiere die **Client-ID** und öffne diese URL im Browser:
+>    ```
+>    https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=DEINE_CLIENT_ID&redirect_uri=http://localhost&scope=chat:read+chat:edit+channel:moderate
+>    ```
+> 3. Nach dem Autorisieren steht der Token in der URL-Leiste (`access_token=...`)
+> 4. Im Dashboard eintragen als `oauth:DEIN_TOKEN`
 
 ---
 
