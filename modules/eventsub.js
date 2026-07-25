@@ -59,7 +59,11 @@ async function connect(opts) {
   connectWebSocket(reconnectUrl);
 }
 
+let authFailed = false;
+
 function connectWebSocket(url) {
+  if (authFailed) return;
+
   ws = new WebSocket(url);
 
   ws.on('open', () => {
@@ -74,10 +78,9 @@ function connectWebSocket(url) {
   ws.on('close', (code) => {
     console.log(`⚠️  EventSub: WebSocket geschlossen (Code: ${code})`);
     clearTimeout(keepaliveTimeout);
-    // Reconnect nach 5 Sekunden (außer bei normalem Close)
-    if (code !== 1000) {
-      setTimeout(() => connectWebSocket(reconnectUrl), 5000);
-    }
+    // Nicht reconnecten bei Auth-Fehlern oder normalem Close
+    if (code === 1000 || code === 4003 || authFailed) return;
+    setTimeout(() => connectWebSocket(reconnectUrl), 5000);
   });
 
   ws.on('error', (err) => {
@@ -177,9 +180,11 @@ async function createSubscription(type, version, condition) {
     } else {
       const errMsg = data.message || data.error || JSON.stringify(data);
       console.error(`❌ EventSub: ${type} Fehler: ${errMsg}`);
-      if (data.status === 403) {
+      if (data.status === 403 || data.status === 401) {
         console.error('   → Der Bot braucht den Scope "moderator:read:followers"');
         console.error('   → Der Bot-Account muss Moderator im Kanal sein');
+        console.error('   → Generiere ein neues OAuth Token mit dem richtigen Scope');
+        authFailed = true;
       }
     }
   } catch (err) {

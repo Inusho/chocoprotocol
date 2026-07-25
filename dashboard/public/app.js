@@ -66,7 +66,13 @@ socket.on('stats', (stats) => updateStats(stats));
 socket.on('event', (event) => addEvent(event));
 
 // Sounds im Dashboard abspielen
+let lastSoundTime = 0;
 socket.on('playSound', (data) => {
+  // Duplikat-Schutz: Kein Sound doppelt innerhalb 1 Sekunde
+  const now = Date.now();
+  if (now - lastSoundTime < 1000) return;
+  lastSoundTime = now;
+
   const audio = new Audio(data.file);
   audio.volume = 0.5;
   audio.play().catch(() => {});

@@ -5,7 +5,7 @@ module.exports = {
   name: 'sound',
   aliases: ['play', 'sb'],
   description: 'Spielt einen Sound ab (!sound liste für alle Sounds)',
-  cooldown: 10,
+  cooldown: 0, // Cooldown wird manuell im Soundboard-Modul verwaltet
 
   execute(client, channel, tags, args) {
     if (!args[0] || args[0] === 'liste' || args[0] === 'list') {

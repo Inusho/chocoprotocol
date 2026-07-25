@@ -39,8 +39,14 @@
     const socket = io();
     const indicator = document.getElementById('indicator');
     let hideTimer;
+    let lastSoundTime = 0;
 
     socket.on('playSound', (data) => {
+      // Duplikat-Schutz
+      const now = Date.now();
+      if (now - lastSoundTime < 1000) return;
+      lastSoundTime = now;
+
       // Sound abspielen
       const audio = new Audio(data.file);
       audio.volume = 1.0;
