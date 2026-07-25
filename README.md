@@ -125,7 +125,17 @@ Alle Commands können im Dashboard ein-/ausgeschaltet werden.
 
 ---
 
-## Eigenen Command programmieren
+## Eigenen Command erstellen
+
+### Über das Dashboard (einfach)
+
+1. Dashboard öffnen → **⚡ Commands** Tab
+2. **+ Neuer Command** klicken
+3. Name eingeben (ohne `!`), Antwort-Text schreiben
+4. Optional: Cooldown setzen, Nur-Mods aktivieren
+5. **Speichern** – der Command ist sofort aktiv, kein Neustart nötig
+
+### Per Code (für Entwickler)
 
 Erstelle eine neue `.js` Datei im `commands/` Ordner:
 
