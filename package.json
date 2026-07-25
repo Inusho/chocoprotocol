@@ -1,11 +1,23 @@
 {
-  "name": "twitch-bot",
+  "name": "chocoprotocol",
   "version": "1.0.0",
-  "description": "Eigener Twitch Chat Bot",
+  "description": "Modularer Twitch Bot mit Web-Dashboard & Discord-Integration",
   "main": "bot.js",
+  "bin": "bot.js",
   "scripts": {
     "start": "node bot.js",
     "dev": "node --watch bot.js"
+  },
+  "pkg": {
+    "scripts": [
+      "modules/**/*.js",
+      "commands/**/*.js"
+    ],
+    "assets": [
+      "dashboard/public/**/*",
+      "data/README.txt",
+      "sounds/README.txt"
+    ]
   },
   "dependencies": {
     "dotenv": "^16.4.5",
