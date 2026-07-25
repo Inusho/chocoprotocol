@@ -13,9 +13,22 @@ const lastPlayed = new Map();
 
 // Socket.IO Referenz (wird von dashboard/server.js gesetzt)
 let io = null;
+const soundClients = new Set();
 
 function setIO(socketIO) {
   io = socketIO;
+
+  io.on('connection', (socket) => {
+    // Clients registrieren sich als Sound-Player (nur Overlay)
+    socket.on('registerSoundPlayer', () => {
+      soundClients.add(socket.id);
+      console.log(`🔊 Sound-Player registriert (${soundClients.size} aktiv)`);
+    });
+
+    socket.on('disconnect', () => {
+      soundClients.delete(socket.id);
+    });
+  });
 }
 
 /**
@@ -73,9 +86,18 @@ function play(soundName, userId) {
     return { success: false, message: `❌ Sound "${soundName}" nicht gefunden!` };
   }
 
-  // Sound per Socket.IO an alle Clients senden
+  // Sound nur an registrierte Sound-Player senden
   if (io) {
-    io.emit('playSound', { file: `/sounds/${fileName}`, name: soundName });
+    if (soundClients.size > 0) {
+      for (const clientId of soundClients) {
+        io.to(clientId).emit('playSound', { file: `/sounds/${fileName}`, name: soundName });
+      }
+      console.log(`🔊 Sound "${soundName}" → ${soundClients.size} Sound-Player`);
+    } else {
+      // Fallback: an alle senden wenn kein Overlay registriert
+      console.log(`🔊 Sound "${soundName}" → alle Clients (kein Overlay registriert)`);
+      io.emit('playSound', { file: `/sounds/${fileName}`, name: soundName });
+    }
   }
 
   lastPlayed.set(userId, now);

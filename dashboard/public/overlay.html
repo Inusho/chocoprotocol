@@ -41,6 +41,11 @@
     let hideTimer;
     let lastSoundTime = 0;
 
+    // Als Sound-Player registrieren
+    socket.on('connect', () => {
+      socket.emit('registerSoundPlayer');
+    });
+
     socket.on('playSound', (data) => {
       // Duplikat-Schutz
       const now = Date.now();
