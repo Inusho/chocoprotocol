@@ -107,6 +107,10 @@ function execute(client, channel, tags, commandName, args) {
   response = response.replace(/\{random (\d+)-(\d+)\}/g, (_, min, max) => {
     return Math.floor(Math.random() * (parseInt(max) - parseInt(min) + 1)) + parseInt(min);
   });
+  response = response.replace(/\{pick ([^}]+)\}/g, (_, options) => {
+    const choices = options.split('|').map((s) => s.trim());
+    return choices[Math.floor(Math.random() * choices.length)];
+  });
 
   client.say(channel, response);
   incrementCount(commandName);
