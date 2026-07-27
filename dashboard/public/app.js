@@ -437,6 +437,149 @@ document.querySelector('[data-tab="notifications"]').addEventListener('click', l
 loadNotifications();
 
 // ============================================
+// TIMER MANAGER
+// ============================================
+
+const btnAddTimer = document.getElementById('btnAddTimer');
+const timerForm = document.getElementById('timerForm');
+const timerFormTitle = document.getElementById('timerFormTitle');
+const timerName = document.getElementById('timerName');
+const timerMessage = document.getElementById('timerMessage');
+const timerInterval = document.getElementById('timerInterval');
+const timerMinMessages = document.getElementById('timerMinMessages');
+const btnSaveTimer = document.getElementById('btnSaveTimer');
+const btnCancelTimer = document.getElementById('btnCancelTimer');
+const timerList = document.getElementById('timerList');
+
+let editingTimer = null;
+
+// Timer laden
+async function loadTimers() {
+  try {
+    const res = await fetch('/api/timers');
+    const data = await res.json();
+    renderTimers(data);
+  } catch (err) {
+    console.error('Timer laden fehlgeschlagen:', err);
+  }
+}
+
+function renderTimers(data) {
+  if (data.length === 0) {
+    timerList.innerHTML = '<p class="empty-state">Noch keine Timer erstellt</p>';
+    return;
+  }
+
+  let html = '';
+  data.forEach((timer) => {
+    const minMsg = timer.minMessages > 0 ? ` | min. ${timer.minMessages} Nachrichten` : '';
+    html += `
+      <div class="command-item ${timer.enabled ? '' : 'disabled'}">
+        <div class="cmd-info">
+          <div class="cmd-name">⏰ ${escapeHtml(timer.name)}</div>
+          <div class="cmd-desc">${escapeHtml(timer.message)} (alle ${timer.interval} Min.${minMsg})</div>
+        </div>
+        <div class="cmd-actions">
+          <button onclick="toggleTimer('${timer.name}')" title="${timer.enabled ? 'Deaktivieren' : 'Aktivieren'}">${timer.enabled ? '⏸️' : '▶️'}</button>
+          <button onclick="editTimer('${timer.name}')" title="Bearbeiten">✏️</button>
+          <button class="btn-delete" onclick="deleteTimer('${timer.name}')" title="Löschen">🗑️</button>
+        </div>
+      </div>`;
+  });
+  timerList.innerHTML = html;
+}
+
+btnAddTimer.addEventListener('click', () => {
+  editingTimer = null;
+  timerFormTitle.textContent = 'Neuer Timer';
+  timerName.value = '';
+  timerName.disabled = false;
+  timerMessage.value = '';
+  timerInterval.value = 15;
+  timerMinMessages.value = 5;
+  timerForm.classList.remove('hidden');
+});
+
+btnCancelTimer.addEventListener('click', () => {
+  timerForm.classList.add('hidden');
+  editingTimer = null;
+});
+
+btnSaveTimer.addEventListener('click', async () => {
+  const name = editingTimer || timerName.value.trim();
+  const message = timerMessage.value.trim();
+  const interval = parseInt(timerInterval.value) || 15;
+  const minMessages = parseInt(timerMinMessages.value) || 0;
+
+  if (!name || !message) {
+    alert('Bitte Name und Nachricht ausfüllen!');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/timers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, message, interval, minMessages }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      timerForm.classList.add('hidden');
+      editingTimer = null;
+      loadTimers();
+      showToast('Timer gespeichert!');
+    } else {
+      alert(data.message || 'Fehler beim Speichern');
+    }
+  } catch (err) {
+    alert('Fehler: ' + err.message);
+  }
+});
+
+async function editTimer(name) {
+  try {
+    const res = await fetch('/api/timers');
+    const data = await res.json();
+    const timer = data.find((t) => t.name === name);
+    if (!timer) return;
+
+    editingTimer = name;
+    timerFormTitle.textContent = `Timer bearbeiten: ${name}`;
+    timerName.value = name;
+    timerName.disabled = true;
+    timerMessage.value = timer.message;
+    timerInterval.value = timer.interval;
+    timerMinMessages.value = timer.minMessages;
+    timerForm.classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function deleteTimer(name) {
+  if (!confirm(`Timer "${name}" wirklich löschen?`)) return;
+  try {
+    await fetch(`/api/timers/${name}`, { method: 'DELETE' });
+    loadTimers();
+  } catch (err) {
+    alert('Fehler: ' + err.message);
+  }
+}
+
+async function toggleTimer(name) {
+  try {
+    await fetch(`/api/timers/${name}/toggle`, { method: 'PATCH' });
+    loadTimers();
+  } catch (err) {
+    alert('Fehler: ' + err.message);
+  }
+}
+
+// Timer laden wenn Tab aktiviert wird
+document.querySelector('[data-tab="timers"]').addEventListener('click', loadTimers);
+loadTimers();
+
+// ============================================
 // SETTINGS MANAGER
 // ============================================
 

@@ -14,6 +14,7 @@ const dashboard = require('./dashboard/server');
 const discord = require('./modules/discord');
 const twitchApi = require('./modules/twitch-api');
 const eventsub = require('./modules/eventsub');
+const timers = require('./modules/timers');
 
 // Commands laden
 loadCommands();
@@ -49,6 +50,9 @@ if (!settings.isConfigured()) {
   client.on('connected', (address, port) => {
     console.log(`✅ Bot verbunden mit ${address}:${port}`);
     console.log(`📺 Kanal: #${config.bot.channel}`);
+
+    // Timer starten
+    timers.startAll((msg) => client.say(`#${config.bot.channel}`, msg));
   });
 
   // === EVENT: Neue Nachricht im Chat ===
@@ -57,6 +61,9 @@ if (!settings.isConfigured()) {
       dashboard.logMessage(tags, message, true);
       return;
     }
+
+    // Nachrichten für Timer zählen
+    timers.countMessage();
 
     dashboard.logMessage(tags, message);
 

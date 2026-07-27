@@ -99,6 +99,41 @@ app.put('/api/notifications/:type', (req, res) => {
   res.json(result);
 });
 
+// === API Routen für Timer ===
+const timers = require('../modules/timers');
+
+// Alle Timer abrufen
+app.get('/api/timers', (req, res) => {
+  res.json(timers.getAll());
+});
+
+// Timer erstellen/aktualisieren
+app.post('/api/timers', (req, res) => {
+  const result = timers.set(req.body);
+  if (result.success && currentClient) {
+    timers.restart((msg) => currentClient.say(`#${state.channel}`, msg));
+  }
+  res.json(result);
+});
+
+// Timer löschen
+app.delete('/api/timers/:name', (req, res) => {
+  const result = timers.remove(req.params.name);
+  if (result.success && currentClient) {
+    timers.restart((msg) => currentClient.say(`#${state.channel}`, msg));
+  }
+  res.json(result);
+});
+
+// Timer ein-/ausschalten
+app.patch('/api/timers/:name/toggle', (req, res) => {
+  const result = timers.toggle(req.params.name);
+  if (result.success && currentClient) {
+    timers.restart((msg) => currentClient.say(`#${state.channel}`, msg));
+  }
+  res.json(result);
+});
+
 // === API Routen für Discord ===
 const discord = require('../modules/discord');
 const twitchApi = require('../modules/twitch-api');
