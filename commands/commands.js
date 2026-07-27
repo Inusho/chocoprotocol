@@ -23,6 +23,6 @@ module.exports = {
       .map((cmd) => `${prefix}${cmd.name}`);
 
     const all = [...builtIn, ...custom].join(', ');
-    client.say(channel, `📋 Verfügbare Commands: ${all}`);
+    client.say(channel, `Verfügbare Commands: ${all}`);
   },
 };

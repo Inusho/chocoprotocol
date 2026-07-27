@@ -264,7 +264,7 @@ If you find this project useful, you can buy me a coffee!
 
 ## Hinweis
 
-Dieses Projekt wurde mit Unterstützung von KI (GitHub Copilot / Claude) entwickelt.
+Dieses Projekt wurde vollständig mit Hilfe von KI (GitHub Copilot / Claude) erstellt. Konzept und Anforderungen stammen von mir – der Code wurde von der KI geschrieben.
 
 ---
 
