@@ -154,15 +154,16 @@ body {
 
 .tab-btn {
   flex: 1;
-  padding: 12px;
+  padding: 10px 4px;
   background: none;
   border: none;
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   border-bottom: 2px solid transparent;
+  white-space: nowrap;
 }
 
 .tab-btn:hover {
