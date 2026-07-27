@@ -262,6 +262,12 @@ If you find this project useful, you can buy me a coffee!
 
 ---
 
+## Hinweis
+
+Dieses Projekt wurde mit Unterstützung von KI (GitHub Copilot / Claude) entwickelt.
+
+---
+
 ## Lizenz
 
 MIT
