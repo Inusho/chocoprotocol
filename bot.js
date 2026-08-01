@@ -122,10 +122,20 @@ if (!settings.isConfigured()) {
   });
 
   // === EVENT: Raid ===
-  client.on('raided', (channel, username, viewers) => {
+  client.on('raided', async (channel, username, viewers) => {
     notifications.onRaid(client, channel, username, viewers);
     dashboard.logEvent('raid', { username, viewers });
     discord.notify(config.discord.webhookUrl, 'raid', { user: username, viewers });
+
+    // Auto-Shoutout für Raider
+    const { getChannelInfo } = require('./commands/shoutout');
+    const info = await getChannelInfo(username);
+    if (info) {
+      const game = info.game ? ` | Zuletzt: ${info.game}` : '';
+      client.say(channel, `📢 Danke für den Raid @${info.displayName}! Schaut bei ihnen vorbei!${game} → twitch.tv/${username}`);
+    } else {
+      client.say(channel, `📢 Danke für den Raid @${username}! Schaut vorbei → twitch.tv/${username}`);
+    }
   });
 
   // === EVENT: Gift Sub ===
