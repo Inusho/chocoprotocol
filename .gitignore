@@ -10,6 +10,8 @@ data/custom-commands.json
 data/disabled-commands.json
 data/notifications.json
 data/discord.json
+data/timers.json
+data/watchtime.json
 
 # Sound-Dateien
 sounds/*.mp3

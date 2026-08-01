@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Overlay</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: transparent;
+      overflow: hidden;
+      font-family: 'Segoe UI', 'Noto Sans', Arial, sans-serif;
+    }
+
+    #chatContainer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .chat-msg {
+      padding: 4px 10px;
+      margin-bottom: 4px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.55);
+      animation: slideIn 0.3s ease-out;
+      transition: opacity 0.5s ease;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+
+    .chat-msg.fading {
+      opacity: 0;
+    }
+
+    .chat-msg .badge {
+      font-size: 0.75em;
+      margin-right: 2px;
+    }
+
+    .chat-msg .username {
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    .chat-msg .text {
+      color: #fff;
+    }
+
+    .chat-msg .source-tag {
+      font-size: 0.7em;
+      color: #ffb800;
+      font-weight: 600;
+      margin-right: 4px;
+      background: rgba(255, 184, 0, 0.15);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div id="chatContainer"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // URL-Parameter für Anpassung
+    const params = new URLSearchParams(window.location.search);
+    const MAX_MESSAGES = parseInt(params.get('max')) || 10;
+    const FADE_AFTER = (parseInt(params.get('fade')) || 30) * 1000;
+    const FONT_SIZE = parseInt(params.get('fontSize')) || 14;
+    const SHOW_BADGES = params.get('badges') !== 'false';
+    const SHOW_TIME = params.get('time') === 'true';
+
+    document.getElementById('chatContainer').style.fontSize = FONT_SIZE + 'px';
+
+    const socket = io();
+    const container = document.getElementById('chatContainer');
+    const messages = [];
+
+    socket.on('chat', (msg) => {
+      if (msg.isBot) return;
+
+      const div = document.createElement('div');
+      div.className = 'chat-msg';
+
+      let badges = '';
+      if (SHOW_BADGES) {
+        if (msg.badges.broadcaster) badges += '<span class="badge">📺</span>';
+        else if (msg.badges.moderator) badges += '<span class="badge">⚔️</span>';
+        else if (msg.badges.vip) badges += '<span class="badge">💎</span>';
+        else if (msg.badges.subscriber) badges += '<span class="badge">⭐</span>';
+      }
+
+      let source = '';
+      if (msg.sourceChannel) {
+        source = `<span class="source-tag">[${escapeHtml(msg.sourceChannel)}]</span>`;
+      }
+
+      let time = '';
+      if (SHOW_TIME) {
+        time = `<span style="color:#888;font-size:0.75em;margin-right:4px">${msg.time}</span>`;
+      }
+
+      const safeMsg = escapeHtml(msg.message);
+      const safeName = escapeHtml(msg.username);
+
+      div.innerHTML = `
+        ${time}${source}${badges}<span class="username" style="color:${msg.color}">${safeName}:</span>
+        <span class="text">${safeMsg}</span>
+      `;
+
+      container.appendChild(div);
+      messages.push({ el: div, time: Date.now() });
+
+      // Alte Nachrichten entfernen
+      while (messages.length > MAX_MESSAGES) {
+        const old = messages.shift();
+        old.el.remove();
+      }
+    });
+
+    // Fade-Out Timer
+    setInterval(() => {
+      const now = Date.now();
+      for (const msg of messages) {
+        if (now - msg.time > FADE_AFTER && !msg.fading) {
+          msg.fading = true;
+          msg.el.classList.add('fading');
+          setTimeout(() => {
+            msg.el.remove();
+            const idx = messages.indexOf(msg);
+            if (idx >= 0) messages.splice(idx, 1);
+          }, 500);
+        }
+      }
+    }, 1000);
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

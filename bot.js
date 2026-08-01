@@ -15,6 +15,7 @@ const discord = require('./modules/discord');
 const twitchApi = require('./modules/twitch-api');
 const eventsub = require('./modules/eventsub');
 const timers = require('./modules/timers');
+const watchtime = require('./modules/watchtime');
 
 // Commands laden
 loadCommands();
@@ -62,10 +63,24 @@ if (!settings.isConfigured()) {
       return;
     }
 
-    // Nachrichten für Timer zählen
-    timers.countMessage();
+    // Stream Together: Nachrichten aus fremden Kanälen nur anzeigen, nicht verarbeiten
+    const sourceChannel = tags['source-room-login'];
+    const isFromOtherChannel = sourceChannel && sourceChannel.toLowerCase() !== config.bot.channel.toLowerCase();
+
+    // Nachrichten für Timer zählen (nur eigener Kanal)
+    if (!isFromOtherChannel) {
+      timers.countMessage();
+    }
+
+    // Watchtime tracken (nur eigener Kanal)
+    if (!isFromOtherChannel) {
+      watchtime.trackMessage(tags['display-name'] || tags.username);
+    }
 
     dashboard.logMessage(tags, message);
+
+    // Bei fremden Kanälen: Keine Moderation, keine Commands
+    if (isFromOtherChannel) return;
 
     const isMod = tags.mod || tags.badges?.broadcaster === '1';
     if (!isMod) {
