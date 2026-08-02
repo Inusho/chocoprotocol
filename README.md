@@ -16,9 +16,14 @@ Komplett über die Web-Oberfläche konfigurierbar – keine Kommandozeile nötig
 - **🛡️ Auto-Moderation** – Links, Caps-Spam und gesperrte Wörter filtern
 - **📢 Benachrichtigungen** – Konfigurierbare Texte für Subs, Raids, Gift Subs, Follows
 - **💬 Discord-Integration** – Live-Benachrichtigungen, Sub-Alerts und Raid-Meldungen an Discord
-- **🔊 Soundboard** – `.mp3`/`.wav` Dateien per Chat-Command abspielen
-- **🌐 Web-Dashboard** – Live-Chat, Events, Command-Manager, Einstellungen
-- **⚙️ Web-Konfiguration** – Alle Einstellungen direkt im Browser verwalten (kein .env nötig)
+- **🔊 Soundboard** – `.mp3`/`.wav`/`.ogg` Dateien per Chat-Command über OBS abspielen
+- **⏰ Timer** – Wiederkehrende Nachrichten mit Chat-Aktivitäts-Bedingung
+- **📢 Auto-Shoutout** – Streamer-Freunde bekommen automatisch einen SO bei erster Nachricht
+- **📊 Watchtime** – Tracking wie lange Zuschauer im Chat sind (`!watchtime`)
+- **🏆 Ranglisten** – Top-Chatter nach Nachrichten (`!top`)
+- **🎮 Stream Together** – Bot reagiert nur auf den eigenen Kanal im Shared Chat
+- **🌐 Web-Dashboard** – Live-Chat, Events, Commands, Timer, Einstellungen
+- **⚙️ Web-Konfiguration** – Alle Einstellungen direkt im Browser verwalten
 - **🐳 Docker-Ready** – Ein Befehl und der Bot läuft
 
 ---
@@ -28,7 +33,7 @@ Komplett über die Web-Oberfläche konfigurierbar – keine Kommandozeile nötig
 ### Mit Docker (empfohlen)
 
 ```bash
-git clone https://github.com/NanakiXIIV/chocoprotocol.git
+git clone https://github.com/Inusho/chocoprotocol.git
 cd chocoprotocol
 docker compose up -d
 ```
@@ -40,11 +45,17 @@ Beim ersten Start erscheint ein Setup-Banner – einfach Twitch-Daten eingeben, 
 ### Ohne Docker
 
 ```bash
-git clone https://github.com/NanakiXIIV/chocoprotocol.git
+git clone https://github.com/Inusho/chocoprotocol.git
 cd chocoprotocol
 npm install
 npm start
 ```
+
+### Windows (start.bat)
+
+1. [Release herunterladen](https://github.com/Inusho/chocoprotocol/releases)
+2. ZIP entpacken
+3. `start.bat` doppelklicken (benötigt [Node.js](https://nodejs.org/))
 
 ---
 
@@ -108,6 +119,7 @@ Eigene Commands direkt im Dashboard erstellen:
 | `{args}` | Text nach dem Command | `!shoutout cooler_streamer` → `cooler_streamer` |
 | `{count}` | Wie oft der Command benutzt wurde | `42` |
 | `{random 1-100}` | Zufallszahl im Bereich | `73` |
+| `{pick A \| B \| C}` | Zufällige Auswahl | `!8ball` → eine von mehreren Antworten |
 
 ---
 
@@ -119,7 +131,10 @@ Eigene Commands direkt im Dashboard erstellen:
 | `!dice` | `!würfel`, `!roll` | Würfeln (1-6) |
 | `!commands` | `!hilfe`, `!help` | Zeigt alle Commands |
 | `!uptime` | – | Stream-Laufzeit |
-| `!sound` | – | Sound abspielen |
+| `!sound` | `!play`, `!sb` | Sound abspielen |
+| `!so` | `!shoutout` | Shoutout (nur Mods) |
+| `!watchtime` | – | Eigene Watchtime anzeigen |
+| `!top` | – | Top-Chatter Rangliste |
 
 Alle Commands können im Dashboard ein-/ausgeschaltet werden.
 
@@ -159,12 +174,13 @@ Beim nächsten Neustart wird der Command automatisch geladen.
 ## Projektstruktur
 
 ```
-twitch-bot/
+chocoprotocol/
 ├── bot.js                      # Hauptdatei
 ├── config.js                   # Konfiguration (liest aus settings.json)
 ├── package.json
 ├── Dockerfile
 ├── docker-compose.yml
+├── start.bat                   # Windows Schnellstart
 │
 ├── commands/                   # Chat-Commands
 │   ├── index.js                # Command-System (Autoload, Cooldowns)
@@ -172,28 +188,37 @@ twitch-bot/
 │   ├── dice.js
 │   ├── commands.js
 │   ├── uptime.js
-│   └── sound.js
+│   ├── sound.js
+│   ├── shoutout.js             # !so mit Twitch API
+│   ├── watchtime.js            # !watchtime
+│   └── top.js                  # !top Chatters
 │
 ├── modules/                    # Bot-Module
 │   ├── settings.js             # Zentrale Einstellungsverwaltung
 │   ├── discord.js              # Discord Webhook Integration
 │   ├── twitch-api.js           # Twitch API (Live-Erkennung)
+│   ├── eventsub.js             # EventSub WebSocket (Follows)
 │   ├── moderation.js           # Auto-Mod
 │   ├── notifications.js        # Sub/Raid/Follow Alerts
 │   ├── custom-commands.js      # Dynamische Commands
-│   └── soundboard.js           # Sound-Wiedergabe
+│   ├── soundboard.js           # Sound-Wiedergabe (via OBS Overlay)
+│   ├── timers.js               # Wiederkehrende Nachrichten
+│   ├── watchtime.js            # Watchtime-Tracking
+│   └── shoutout-list.js        # Auto-Shoutout für Freunde
 │
 ├── dashboard/                  # Web-Dashboard
 │   ├── server.js               # Express + Socket.IO + REST API
 │   └── public/
 │       ├── index.html
 │       ├── style.css
-│       └── app.js
+│       ├── app.js
+│       ├── overlay.html        # OBS Overlay (Sounds)
+│       └── chat-overlay.html   # OBS Overlay (Chat)
 │
 ├── data/                       # Laufzeit-Daten (gitignored)
 │   └── settings.json           # Alle Einstellungen
 │
-└── sounds/                     # Sound-Dateien (.mp3/.wav)
+└── sounds/                     # Sound-Dateien (.mp3/.wav/.ogg)
 ```
 
 ---
@@ -208,6 +233,55 @@ Die Auto-Moderation ist im Dashboard unter ⚙️ konfigurierbar:
 | **Caps-Filter** | Ab X% Großbuchstaben = Timeout | 70% |
 | **Gesperrte Wörter** | Frei definierbare Wortliste | – |
 | **Timeout-Dauer** | Wie lange der User gemutet wird | 10s |
+
+---
+
+## Timer
+
+Wiederkehrende Nachrichten im Chat (z.B. Social-Media-Links, Regeln):
+
+1. Dashboard → **⏰ Timer** Tab
+2. **+ Neuer Timer** → Name, Nachricht, Intervall einstellen
+3. **Min. Nachrichten** = Nur senden wenn seit dem letzten Mal X Nachrichten im Chat waren (verhindert Spam in leeren Chat)
+
+---
+
+## Soundboard
+
+Sounds werden über eine OBS Browser-Source abgespielt:
+
+1. `.mp3`/`.wav`/`.ogg` Dateien in den `sounds/` Ordner legen
+2. In OBS: Browser-Source hinzufügen → URL: `http://DEINE-IP:3000/overlay.html`
+3. Im Chat: `!sound name` → Sound wird im Stream abgespielt
+
+---
+
+## Auto-Shoutout
+
+Streamer-Freunde automatisch begrüßen:
+
+1. Dashboard → ⚙️ → **📢 Auto-Shoutout Liste**
+2. Streamer-Usernamen eintragen
+3. Wenn sie zum ersten Mal im Stream schreiben → automatischer Shoutout mit Spiel-Info
+
+Bei Raids kommt der Shoutout ebenfalls automatisch.
+
+---
+
+## OBS Overlays
+
+| Overlay | URL | Beschreibung |
+|---|---|---|
+| **Sound-Overlay** | `/overlay.html` | Spielt Sounds ab, zeigt kurz den Sound-Namen |
+| **Chat-Overlay** | `/chat-overlay.html` | Eigenes Chat-Design für den Stream |
+
+In OBS als Browser-Source hinzufügen mit `http://DEINE-IP:3000/...`
+
+---
+
+## Stream Together
+
+Bei Twitch "Stream Together" (Shared Chat) reagiert der Bot **nur** auf Nachrichten aus dem eigenen Kanal. Nachrichten aus anderen Kanälen werden im Dashboard angezeigt (mit Kanal-Label), aber nicht moderiert oder auf Commands geprüft.
 
 ---
 
@@ -247,7 +321,7 @@ Danach werden alle Änderungen über das Dashboard gemacht.
 > 1. Gehe zu [dev.twitch.tv/console](https://dev.twitch.tv/console) und erstelle eine Anwendung (Redirect URL: `http://localhost`, Kategorie: Chat Bot)
 > 2. Kopiere die **Client-ID** und öffne diese URL im Browser:
 >    ```
->    https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=DEINE_CLIENT_ID&redirect_uri=http://localhost&scope=chat:read+chat:edit+channel:moderate
+>    https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=DEINE_CLIENT_ID&redirect_uri=http://localhost&scope=chat:read+chat:edit+channel:moderate+moderator:read:followers
 >    ```
 > 3. Nach dem Autorisieren steht der Token in der URL-Leiste (`access_token=...`)
 > 4. Im Dashboard eintragen als `oauth:DEIN_TOKEN`
