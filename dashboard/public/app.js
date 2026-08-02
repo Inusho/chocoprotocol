@@ -796,8 +796,5 @@ async function removeShoutout(name) {
 }
 
 // Laden wenn Settings geöffnet werden
-const origShowSettings = showSettings;
-showSettings = function () {
-  origShowSettings();
-  loadShoutoutList();
-};
+btnSettings.addEventListener('click', loadShoutoutList);
+btnSetup.addEventListener('click', loadShoutoutList);
