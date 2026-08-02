@@ -926,6 +926,43 @@ body {
   font-size: 0.75rem;
 }
 
+/* Shoutout Liste */
+.so-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.so-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+.so-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.so-item .btn-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.so-item .btn-delete:hover {
+  background: var(--bg-primary);
+  color: var(--danger);
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .main {

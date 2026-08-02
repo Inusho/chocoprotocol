@@ -16,6 +16,7 @@ const twitchApi = require('./modules/twitch-api');
 const eventsub = require('./modules/eventsub');
 const timers = require('./modules/timers');
 const watchtime = require('./modules/watchtime');
+const shoutoutList = require('./modules/shoutout-list');
 
 // Commands laden
 loadCommands();
@@ -81,6 +82,20 @@ if (!settings.isConfigured()) {
 
     // Bei fremden Kanälen: Keine Moderation, keine Commands
     if (isFromOtherChannel) return;
+
+    // Auto-Shoutout für Streamer-Freunde (erste Nachricht pro Session)
+    const soTarget = shoutoutList.checkMessage(tags.username);
+    if (soTarget) {
+      const { getChannelInfo } = require('./commands/shoutout');
+      getChannelInfo(soTarget).then((info) => {
+        if (info) {
+          const game = info.game ? ` | Zuletzt: ${info.game}` : '';
+          client.say(channel, `📢 @${info.displayName} ist da! Schaut vorbei!${game} → twitch.tv/${soTarget}`);
+        } else {
+          client.say(channel, `📢 @${soTarget} ist da! Schaut vorbei → twitch.tv/${soTarget}`);
+        }
+      });
+    }
 
     const isMod = tags.mod || tags.badges?.broadcaster === '1';
     if (!isMod) {

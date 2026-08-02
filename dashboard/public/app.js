@@ -725,3 +725,79 @@ function togglePassword(inputId, btn) {
     btn.textContent = '👁️';
   }
 }
+
+// ============================================
+// AUTO-SHOUTOUT LISTE
+// ============================================
+
+const soAddName = document.getElementById('soAddName');
+const btnAddSO = document.getElementById('btnAddSO');
+const soList = document.getElementById('soList');
+
+async function loadShoutoutList() {
+  try {
+    const res = await fetch('/api/shoutout-list');
+    const data = await res.json();
+    renderShoutoutList(data);
+  } catch (err) {
+    console.error('Shoutout-Liste laden fehlgeschlagen:', err);
+  }
+}
+
+function renderShoutoutList(list) {
+  if (list.length === 0) {
+    soList.innerHTML = '<p class="empty-state" style="padding:10px 0;">Noch keine Streamer eingetragen</p>';
+    return;
+  }
+  soList.innerHTML = list
+    .map(
+      (name) => `
+    <div class="so-item">
+      <span class="so-name">@${escapeHtml(name)}</span>
+      <button class="btn-delete" onclick="removeShoutout('${name}')" title="Entfernen">🗑️</button>
+    </div>`
+    )
+    .join('');
+}
+
+btnAddSO.addEventListener('click', async () => {
+  const name = soAddName.value.trim();
+  if (!name) return;
+
+  try {
+    const res = await fetch('/api/shoutout-list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: name }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      soAddName.value = '';
+      loadShoutoutList();
+    } else {
+      alert(data.message);
+    }
+  } catch (err) {
+    alert('Fehler: ' + err.message);
+  }
+});
+
+soAddName.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') btnAddSO.click();
+});
+
+async function removeShoutout(name) {
+  try {
+    await fetch(`/api/shoutout-list/${name}`, { method: 'DELETE' });
+    loadShoutoutList();
+  } catch (err) {
+    alert('Fehler: ' + err.message);
+  }
+}
+
+// Laden wenn Settings geöffnet werden
+const origShowSettings = showSettings;
+showSettings = function () {
+  origShowSettings();
+  loadShoutoutList();
+};

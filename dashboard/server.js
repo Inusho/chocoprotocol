@@ -134,6 +134,24 @@ app.patch('/api/timers/:name/toggle', (req, res) => {
   res.json(result);
 });
 
+// === API Routen für Shoutout-Liste ===
+const shoutoutList = require('../modules/shoutout-list');
+
+app.get('/api/shoutout-list', (req, res) => {
+  res.json(shoutoutList.getAll());
+});
+
+app.post('/api/shoutout-list', (req, res) => {
+  const { username } = req.body;
+  const result = shoutoutList.add(username);
+  res.json(result);
+});
+
+app.delete('/api/shoutout-list/:username', (req, res) => {
+  const result = shoutoutList.remove(req.params.username);
+  res.json(result);
+});
+
 // === API Routen für Discord ===
 const discord = require('../modules/discord');
 const twitchApi = require('../modules/twitch-api');
